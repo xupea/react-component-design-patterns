@@ -575,35 +575,44 @@ describe("<ActiveUserList />", () => {
 
 #### 1. 组件UML图：
 
-State，Props，Methods，其它组件的关系
+组件UML图是UML在组件设计中的一种应用，由于组件间或内部通常是嵌套的结构，通过组件UML图，我们很清晰地看到一个复杂组件的全局。它可以显示 State，Props，Methods，以及其它组件的关系，特别是各个组件的职责，以表格为例子：
 
 ![img](https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/12/27/16f455c0555eae88~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp)
 
-#### 2. 多读源码和组件文档
-
-antd组件库，以及其api 设计文档
-
-#### 3. 类型注释
-
-Bad：
-
-![image-20220808001903504](/Users/xiaomingxu/Library/Application Support/typora-user-images/image-20220808001903504.png)
+组件UML同时也是很好的文档，为组件的维护和重构提供基础。
 
 
 
-#### 4. 为所有 interface 或 type 添加注释
+#### 2. 多读源码和其组件文档
 
-react 的 Props 和 State 接口，能快速了解各个字段的含义
+多读优秀的代码和其使用文档，我们能在文档上封装和职责，代码上看到封装和职责
+
+多读一下antd和element-ui的组件库源码，我们可以找到很多可以参照的代码，
+
+
+
+#### 3. 为所有 interface 或 type 添加注释
+
+特别是组件 的 Props 和 State 接口添加注释，能快速了解各个字段的含义
 
 ```tsx
-interface State {}
-interface Props {}
-
+interface State {
+  /**
+   * 数量
+   */
+  count: number;
+}
+interface Props {
+  /**
+   * 数量
+   */
+  count: number;
+}
 ```
 
 
 
-#### 5. 扁平化的 state 和 props
+#### 4. 扁平化的 State 和 Props
 
 封装组件时，暴露的 props 以及内部维护的state，应该保持扁平化，而不是嵌套的对象。
 
@@ -625,15 +634,7 @@ interface Props {}
 
 
 
-#### 6. 可靠性
-
-保证组件的质量需要精力和定期的review，
-
-随着项目的体积增大，你很有可能忘记计划矫正结构，降低耦合
-
-
-
-#### 7. 持续改进
+#### 5. 持续改进
 
 1.第一次把组件的结构设计好很难的
 
@@ -645,67 +646,76 @@ interface Props {}
 
 发现更好的开源解决方案
 
-
-
 越复杂的组件，就越需要经常验证和重构
-
-
 
 开发就是不断检查之前的决策，然后提升
 
+保证组件的质量需要精力和定期的review，
 
-
-#### 8. 富有意义
-
-开发人员大部分时间都在阅读和理解代码，而不是实际编写代码。 有意义的函数、变量命名，可以让代码具有良好的可读性。
-
-函数 动宾
-
-类 名词
+随着项目的体积增大，你很有可能忘记计划矫正结构，降低耦合
 
 
 
-html tags 
+#### 6. 语义化标签
+
+语义化的标签最大的好处就是让页面或组件具有良好的语义和结构，举例如下：
+
+![HTML 5的革新——语义化标签(一)](https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2018/1/5/160c3bf5485ff9ce~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp)
+
+不要使用无语义化的 `div + css + span` 。
+
+常用的HTML5语义化标签：
+
+|         |                       |             |
+| ------- | --------------------- | ----------- |
+| header  | 网页或section的页眉   |             |
+| footer  | 网页或section的页脚   |             |
+| hgroup  | 网页或section的标题组 | 多个h1-h6时 |
+| nav     | 页面的导航链接区域    |             |
+| aside   | 独立的内容区域        |             |
+| section | 文档中的“节”或“段”    |             |
+| article | 网页中自成一体的内容  |             |
+| address | 地址                  |             |
+| h1-h6   | 标题                  |             |
+
+详细使用场景可以参考：https://html.spec.whatwg.org/multipage/sections.html#the-header-element
 
 
 
-按照 结构 和 业务 来划分
+#### 7. 不允许注释掉代码
+
+注释掉的代码真的是百害而无一利，它会：
+
+- 分散我们注意力
+
+- 增加我们的认知负荷
+
+- 随着时间的推移，容易过期
+
+不用的代码统统删掉，相信 `git diff`
+
+```
+// ❌
+function foo(bar) {
+  const baz = bar(false)
+  // we no longer do this for some good reason
+  // if (baz === 'foobar') {
+  // return baz
+  // } else {
+  // return bar.foobar()
+  // }
+  return baz
+}
+
+// ✅
+function foo(bar) {
+  return bar(false)
+}
+```
 
 
 
-结合 html tags 和 antd（dui）
-
-
-
-#### 9. 纯组件和非纯组件
-
-非纯组件有显式的副作用，我们要隔离副作用代码
-
-##### 1. 全局变量
-
-通过props传递给组件，而非直接注入组件的作用域中
-
-##### 2. 网络请求
-
-将网络请求和组件渲染分离
-
-
-
-非纯组件有显示的副作用，我们要尽量隔离非纯代码。
-
-将全局变量作为props传递给组件，而非将其注入到组件的作用域中。
-
-将网络请求和组件渲染分离，只将数据传递给组件，保证组件职责的单一性，也能将非纯代码从组件中隔离。
-
-
-
-#### 10. 不允许注释代码
-
-不用的代码统统删掉，相信git
-
-
-
-参考：
+### 10. 参考：
 
 1.React哲学[https://zh-hans.reactjs.org/docs/thinking-in-react.html]
 
@@ -721,60 +731,4 @@ html tags
 
 7.前端组件设计之一——设计原则[https://juejin.cn/post/6844904032700481550]
 
-
-
-
-
-### 如何构建一个应用?
-
-组件化
-
-组件允许你将 UI 拆分为独立可复用的代码片段，并对每个片段进行独立构思。
-
-组件，从概念上类似于 JavaScript 函数。它接受任意的入参（即 “props”），并返回用于描述页面展示内容的 React 元素。（组件 = props + state + render）
-
-React哲学
-
-antd组件：良好的设计，才能保证 组合 和 复用 才能受益
-
-很多功能加载在一起的大组件，组件间耦合，没有单元测试 = 技术债，很难修改和新增功能
-
-
-
-问一下自己：
-
-1.怎么正确地构造组件的结构
-
-2.什么时候拆分大组件为小组件
-
-3.组件间通信解耦
-
-组件即封装（高内聚，低耦合）
-
-组件的层次结构
-
-自顶向下设计：
-
-
-
-
-
-错误1：
-
-prop drilling
-
-Pass-through props
-
-Redux
-
-
-
-错误2：
-
-传递 className prop
-
-
-
-错误3：
-
-margin
+8.请不要注释掉代码[https://kentcdodds.com/blog/please-dont-commit-commented-out-code]
