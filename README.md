@@ -40,7 +40,7 @@
 
 #### 1. 基础组件（原子组件）
 
-第三方组件库如 antd，element-ui，提供的组件，以及 原生 dom 标签
+第三方组件库如 antd，element-ui等提供的组件，以及 原生 dom 标签都是基础组件，它是我们构建一个应用的基础。
 
 ```tsx
 <Button></Button>
@@ -54,9 +54,18 @@
 
 #### 2. 展示型组件（标准组件）
 
-只描述UI，通过props来决定
+展示型组件只通过 `props` 接受数据和回调函数，它可以包含展示和容器组件，但它不直接使用`redux` 等状态管理库 。
 
-通过组合基础组件
+```tsx
+const Compoent = (props) => {
+  return (
+    <div>
+      <Input />
+      <Button>{props.searchButtonLabel}</Button>
+    </div>
+  );
+};
+```
 
 
 
@@ -68,7 +77,7 @@
 
 
 
-#### 4. 容器组件
+#### 4. 容器型组件
 
 对应一个页面，按照区域（上下左右，左中右，上中下，左右）
 
@@ -95,6 +104,12 @@
 
 
 一个页面通常就是一个容器组件，它需要准备页面所需的数据，以及组合出对应的UI
+
+
+
+各个组件之间的协同关系：
+
+![image](https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/8/16/16c99a006d116e2e~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp)
 
 
 
@@ -207,19 +222,21 @@ export default Medium;
 
 ### 5. 原则1：单一职责原则
 
-每一个组件都应该只实现一个**职责**，并且只有一个改变状态的理由。
+> 每一个组件都应该只实现一个**职责**，并且只有一个改变状态的理由。
 
-可以按照一下规则拆分组件：
+代码的维护性和质量和代码的复杂度是正相关的。单一职责原则可以让组件的复杂度降低，变得易于理解，进而提升组件的维护性和质量。
+
+为了确保组件只做一件事，可以按照以下规则拆分组件：
 
 #### 1. 按数据逻辑和UI渲染拆分
 
-#### 2. 数据逻辑再拆分：数据请求和数据处理
+#### 2. 按数据逻辑再拆分：数据请求和数据处理
 
-#### 3. UI渲染再拆分：按逻辑或业务功能
+#### 3. 按UI渲染再拆分：按逻辑或业务功能
 
 
 
-举个例子：
+举个例子，显示活跃用户列表的组件：
 
 ```tsx
 import React, { useState, useEffect } from "react";
@@ -271,15 +288,11 @@ const ActiveUsersList = () => {
 export default ActiveUsersList;
 ```
 
-可以看出组件做了很多事情：获取数据、过滤数据、根据数据渲染UI。
+这个组件虽然代码不多，但是做了很多事情：获取数据、过滤数据、根据数据渲染UI。
 
+首先按数据逻辑和UI渲染拆分，其中数据逻辑部分：
 
-
-useEffect 总是一个可能的拆分点，因为它总是在处理副作用
-
-如果useEffect 和 useState 成对出现，通常是一个Custom Hook
-
-
+useEffect 总是一个可能的拆分点，因为它总是在处理副作用，如果useEffect 和 useState 成对出现，通常可以提取到一个 自定义 Hook。
 
 ```tsx
 const useUsers = () => {
@@ -299,9 +312,11 @@ const useUsers = () => {
 }
 ```
 
-useUsers Hook 只关心一件事——从API中获取用户数据
+useUsers Hook 只关心一件事——从API中获取用户数据。
 
+渲染UI部分：
 
+组件渲染时对对象数组进行遍历时，都应该注意它为每个数组项生成的 JSX 的复杂性。如果它是一个没有附加任何事件处理函数的单行代码，将其保持内联是完全没有问题的。但对于更复杂的JSX，将其提取到单独的组件中。
 
 ```tsx
 const UserItem = ({ user }) => {
@@ -315,9 +330,11 @@ const UserItem = ({ user }) => {
 }
 ```
 
-列表的子项通常也可以抽离出来
 
 
+接着我们按数据逻辑再拆分：
+
+从 API 获取到的用户列表中过滤出所有非活跃用户的逻辑是相对独立的，可以在其他部分重用，所以可以将其提取到一个公共函数中。同时组合之前的自定义hook，我们抽象出了整个组件的数据逻辑部分。
 
 ```tsx
 const getOnlyActive = (users) => {
@@ -326,9 +343,80 @@ const getOnlyActive = (users) => {
   
   return users.filter(user => !user.isBanned && user.lastActivityAt >= weekAgo)
 }
+
+const useActiveUsers = () => {
+  const { users } = useUsers()
+
+  const activeUsers = useMemo(() => {
+    return getOnlyActive(users)
+  }, [users])
+
+  return { activeUsers }
+}
 ```
 
-从 API 获取到的用户列表中过滤出所有非活跃用户的逻辑是相对独立的，可以在其他部分重用，所以可以将其提取到一个公共函数中
+
+
+改造后的组件只剩下两个职责：获取数据和渲染UI。
+
+```tsx
+const useUsers = () => {
+  const [users, setUsers] = useState([])
+  
+  useEffect(() => {
+    const loadUsers = async () => {  
+      const response = await fetch('/some-api')
+      const data = await response.json()
+      setUsers(data)
+    }
+
+    loadUsers()
+  }, [])
+  
+  return { users }
+}
+
+const UserItem = ({ user }) => {
+  return (
+    <li>
+      <img src={user.avatarUrl} />
+      <p>{user.fullName}</p>
+      <small>{user.role}</small>
+    </li>
+  )
+}
+
+const getOnlyActive = (users) => {
+  const weekAgo = new Date()
+  weekAgo.setDate(weekAgo.getDate() - 7)
+  
+  return users.filter(user => !user.isBanned && user.lastActivityAt >= weekAgo)
+}
+
+const useActiveUsers = () => {
+  const { users } = useUsers()
+
+  const activeUsers = useMemo(() => {
+    return getOnlyActive(users)
+  }, [users])
+
+  return { activeUsers }
+}
+
+const ActiveUsersList = () => {
+  const { activeUsers } = useActiveUsers()
+
+  return (
+    <ul>
+      {activeUsers.map(user => 
+        <UserItem key={user.id} user={user} />
+      )}
+    </ul>    
+  )
+}
+```
+
+遵循单一职责原则，我们有效地采用了大量独立的代码并使其更加模块化，模块化的代码更容易测试和维护。
 
 
 
@@ -475,29 +563,23 @@ const ConnectedLoginForm = () => {
 
 > 自动化测试就像健身一样，大家都知道有用，但就是不去做
 
-自动化测试是最简单最有效的保证质量的手段，也是最好的设计文档
+自动化测试是最简单最有效的保证质量的手段，也是最好的设计文档，它可以：
 
 
 
-测试的作用：
+#### 1. 保证质量 
 
-1.保证质量 
-
-因为人工回归根本就不靠谱，又低效
-
-2.保证设计
-
-几乎组件都不会写文档，除了作者没人能知道为什么这样设计
-
-自动化的测试代码可以很好的表达意图，活文档
+因为人工回归根本就不靠谱，又低效，单元测试是最高效验证代码是否符合预期的方式。
 
 
 
-如果一个组件测试不易于测试，很大可能是你的组件设计存在问题。
+#### 2. 保证设计
+
+几乎组件都不会写文档，除了作者没人能知道为什么这样设计，自动化的测试代码可以很好的表达意图
 
 
 
-例子：
+如果一个组件测试不易于测试，很大可能是你的组件设计存在问题，如下例子：
 
 ```tsx
 import React from "react";
@@ -522,6 +604,10 @@ describe("<ActiveUserList />", () => {
   });
 });
 ```
+
+
+
+由于测试在重要，我会有一篇单独的文章来描述怎么写测试。
 
 
 
@@ -565,15 +651,13 @@ describe("<ActiveUserList />", () => {
 
 
 
-具体可以设置 ESLint和SonarQube
+具体可以设置 ESLint和SonarQube的规则。
 
 
 
 ### 9. 规则5：命名
 
-命名从来不是一个简单地事情，
-
-信 达 雅
+命名从来不是一个简单地事情，由于它太重要了，我写个一篇单独的文章。
 
 
 
@@ -583,7 +667,7 @@ describe("<ActiveUserList />", () => {
 
 #### 1. 组件UML图：
 
-组件UML图是UML在组件设计中的一种应用，由于组件间或内部通常是嵌套的结构，通过组件UML图，我们很清晰地看到一个复杂组件的全局。它可以显示 State，Props，Methods，以及其它组件的关系，特别是各个组件的职责，以表格为例子：
+组件UML图是UML在组件设计中的一种应用，由于组件间通常是嵌套的结构，通过组件UML图，我们很清晰地看到一个复杂组件的全局。它可以显示 State，Props，Methods，以及与其它组件的关系，特别是各个组件的职责，以表格为例子：
 
 ![img](https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/12/27/16f455c0555eae88~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp)
 
@@ -723,6 +807,10 @@ function foo(bar) {
 
 
 
+#### 8. Props 属性传递优先
+
+不管是自定义Hook 还是 Redux提供 connect，将组件与副作用或store进行关联都很简单（几行代码），但是这样会增加组件的复杂度，以及组件不易测试。尽量让副作用或者与store关联都在父层级去做，然后父层级通过 props 传递到组件。
+
 
 
 遇到一个组件，我们问一下：
@@ -752,4 +840,3 @@ function foo(bar) {
 7.前端组件设计之一——设计原则[https://juejin.cn/post/6844904032700481550]
 
 8.请不要注释掉代码[https://kentcdodds.com/blog/please-dont-commit-commented-out-code]
-
