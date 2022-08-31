@@ -2,7 +2,7 @@
 
 <img src="https://ae01.alicdn.com/kf/H6081faeb783440fe944f4fb3ddfedddch/Original-New-Mavic-Mini-Upper-Cover-Module-Bottom-Cover-Middile-Shell-Motor-Arm-Flat-Cable-Repair.jpg_Q90.jpg_.webp" alt="img" style="zoom: 50%;" />
 
-### 1. 组件和组件化思维？
+### 1. 什么是组件？
 
 > 组件，从概念上类似于 JavaScript 函数。它接受任意的入参（即 “props”），并返回用于描述页面展示内容的 React 元素。
 >
@@ -32,7 +32,7 @@
 
 #### 3. 如果这个“别人” 和 “你”互换一下，为了能让组件好用和可维护，你该怎么办？
 
-到底有没有这样的规则可以遵循？
+到底有没有这样的规则可以遵循，让我们可以写好一个组件呢？
 
 
 
@@ -533,7 +533,7 @@ describe("<ActiveUserList />", () => {
 
 #### 1. 设置X初始值
 
-假设我们设定 一个组件文件的的行数设置为，X1和X2，最大 100 行（类组件） 和 50 行（函数组件，毕竟函数组件自称可以写更少的代码）
+假设我们设定 一个组件文件的的行数设置为，X1和X2，即最大 100 行（类组件） 和 50 行（函数组件，毕竟函数组件自称可以写更少的代码）
 
 
 
@@ -569,7 +569,15 @@ describe("<ActiveUserList />", () => {
 
 
 
-### 9. 最佳实践
+### 9. 规则5：命名
+
+命名从来不是一个简单地事情，
+
+信 达 雅
+
+
+
+### 10. 最佳实践
 
 
 
@@ -715,6 +723,18 @@ function foo(bar) {
 
 
 
+
+
+遇到一个组件，我们问一下：
+
+1.这个组件可测试吗？
+
+2.这些功能是这个组件关心的吗？
+
+3.
+
+
+
 ### 10. 参考：
 
 1.React哲学[https://zh-hans.reactjs.org/docs/thinking-in-react.html]
@@ -732,3 +752,4 @@ function foo(bar) {
 7.前端组件设计之一——设计原则[https://juejin.cn/post/6844904032700481550]
 
 8.请不要注释掉代码[https://kentcdodds.com/blog/please-dont-commit-commented-out-code]
+
