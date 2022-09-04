@@ -18,25 +18,7 @@
 
 
 
-### 2. 期望
-
-> 子贡问曰：有一言而可以终身行之者乎？子曰：其恕乎！己所不欲，勿施于人。
-
-#### 1. 假设别人写个组件给你使用，你期望是什么？
-
-好用：简洁的 api 设计和使用文档， 功能强大，无需知道其实现细节，无bug，方便，快捷
-
-#### 2. 假设别人写个组件给你维护，你期望是什么？
-
-易维护：良好的设计，完备的单元测试和文档
-
-#### 3. 如果这个“别人” 和 “你”互换一下，为了能让组件好用和可维护，你该怎么办？
-
-到底有没有这样的规则可以遵循，让我们可以写好一个组件呢？
-
-
-
-### 3. 组件的分类
+### 2. 组件的分类
 
 #### 1. 基础组件（原子组件）
 
@@ -69,41 +51,9 @@ const Compoent = (props) => {
 
 
 
-#### 3. 业务型组件
+#### 3. 容器型组件（业务组件）
 
-包含业务组件
-
-处理一个业务
-
-
-
-#### 4. 容器型组件
-
-对应一个页面，按照区域（上下左右，左中右，上中下，左右）
-
-
-
-多个业务组件
-
-
-
-业务组件之间联动
-
-
-
-专门负责和store通信
-
-
-
-副作用 和 组合业务组件
-
-
-
-中间组件传递 props
-
-
-
-一个页面通常就是一个容器组件，它需要准备页面所需的数据，以及组合出对应的UI
+专门处理副作用，例如和 store 通信，一个页面通常就是一个容器组件，它需要准备页面所需的数据，以及组合出对应的UI
 
 
 
@@ -113,7 +63,25 @@ const Compoent = (props) => {
 
 
 
-### 4. 原则0：把大象分三步进冰箱
+### 3. 期望
+
+> 子贡问曰：有一言而可以终身行之者乎？子曰：其恕乎！己所不欲，勿施于人。
+
+#### 1. 假设别人写个组件给你使用，你期望是什么？
+
+好用：简洁的 api 设计和使用文档， 功能强大，无需知道其实现细节，无bug，方便，快捷。
+
+#### 2. 假设别人写个组件给你维护，你期望是什么？
+
+易维护：良好的设计，完备的单元测试和文档。
+
+#### 3. 如果这个“别人” 和 “你”互换一下，为了能让组件好用和可维护，你该怎么办？
+
+到底有没有这样的规则可以遵循，让我们可以写好一个组件（好用和可维护）呢？
+
+
+
+### 4. 设计原则0：把大象分三步进冰箱
 
 > 把大象装进冰箱需要几步？答：三步，把冰箱门打开，大象塞进去，关上冰箱门。
 
@@ -220,7 +188,7 @@ export default Medium;
 
 
 
-### 5. 原则1：单一职责原则
+### 5. 设计原则1：单一职责原则
 
 > 每一个组件都应该只实现一个**职责**，并且只有一个改变状态的理由。
 
@@ -420,7 +388,7 @@ const ActiveUsersList = () => {
 
 
 
-### 6. 原则2：开放封闭原则（封装和组合）
+### 6. 设计原则2：开放封闭原则（封装和组合）
 
 组件应该对扩展开放，对修改关闭。允许在不更改源代码的情况下扩展组件的方式来构造组件。
 
@@ -559,7 +527,7 @@ const ConnectedLoginForm = () => {
 
 
 
-### 7. 原则3：完备的测试
+### 7. 设计原则3：完备的测试
 
 > 自动化测试就像健身一样，大家都知道有用，但就是不去做
 
@@ -611,7 +579,7 @@ describe("<ActiveUserList />", () => {
 
 
 
-### 8. 规则4：X 行以内原则
+### 8. 设计规则4：X 行以内原则
 
 不管类组件还是函数组件通常都会在一个模块文件中？那个一个模块文件多少行合适呢？
 
@@ -655,7 +623,7 @@ describe("<ActiveUserList />", () => {
 
 
 
-### 9. 规则5：命名
+### 9. 设计规则5：命名
 
 命名从来不是一个简单地事情，由于它太重要了，我写个一篇单独的文章。
 
@@ -663,7 +631,7 @@ describe("<ActiveUserList />", () => {
 
 ### 10. 最佳实践
 
-
+除了上述原则之外，实践过程还有一些小技巧。
 
 #### 1. 组件UML图：
 
@@ -820,6 +788,59 @@ function foo(bar) {
 2.这些功能是这个组件关心的吗？
 
 3.
+
+
+
+#### 9. import 的顺序
+
+有条理的 import 会让人赏心悦目，推荐使用以下分组和排序：
+
+1.react
+
+2.第三方库（存在于 node_modules 内）
+
+3.内部（存在于 src 内）.
+
+```tsx
+// ❌
+import React, { useState, useEffect, useCallback } from "react";
+import Typography from "@material-ui/core/Typography";
+import Divider from "@material-ui/core/Divider";
+import Title from "../components/Title";
+import Navigation from "../components/Navigation";
+import DialogActions from "@material-ui/core/DialogActions"
+import { getServiceURL } from '../../utils/getServiceURL";
+import Grid from "@material-ui/core/Grid";
+import Paragraph from "../components/Paragprah";
+import { sectionTitleEnum } from "../../constants";
+import { useSelector, useDispatch } from "react-redux";
+import Box from "@material-ui/core/Box";
+import axios from 'axios';
+import { DatePicker } from "@material-ui/pickers";
+import { Formik } from "formik";
+import CustomButton from "../components/CustomButton";
+...
+
+// ✅
+import React, { useState, useEffect, useCallback } from "react";
+
+import { useSelector, useDispatch } from "react-redux";
+import { Formik } from "formik";
+import axios from 'axios';
+import Typography from "@material-ui/core/Typography";
+import Divider from "@material-ui/core/Divider";
+import Box from "@material-ui/core/Box";
+import DialogActions from "@material-ui/core/DialogActions";
+import Grid from "@material-ui/core/Grid";
+import { DatePicker } from "@material-ui/pickers";
+
+import { getServiceURL } from '../../utils/getServiceURL";
+import { sectionTitleEnum } from "../../constants";
+import CustomButton from "../components/CustomButton";
+import Title from "../components/Title";
+import Navigation from "../components/Navigation";
+import Paragraph from "../components/Paragraph";
+```
 
 
 
